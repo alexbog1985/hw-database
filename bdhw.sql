@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS album (
 	id SERIAL PRIMARY KEY,
 	title   VARCHAR(60) NOT NULL,
 	pr_year SMALLINT    NOT NULL
+	        CONSTRAINT pr_year_range
+			CHECK (pr_year BETWEEN 1900 AND 2100)
 );
 
 CREATE TABLE IF NOT EXISTS album_musician (
