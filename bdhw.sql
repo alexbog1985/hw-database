@@ -49,3 +49,4 @@ CREATE TABLE IF NOT EXISTS track_collection (
 	           CONSTRAINT tc_pk 
 	           PRIMARY KEY (track_id, collect_id)
 );
+
