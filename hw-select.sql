@@ -2,6 +2,9 @@
 SELECT title, MAX(duration) as max_duration
   FROM track
  GROUP BY title
+ -- Добавил сортировку по уменьшению, чтобы максимальный результат был всегда первым.
+ -- Мне кажется так проще чем с вложенным запросом, тем более можно быстро изменить запрос на несколько треков с максимальной-минимальной длиной.
+ ORDER BY max_duration DESC
  LIMIT 1;
 
 -- 2.2 Название треков, продолжительность которых не менее 3,5 минут.
@@ -10,7 +13,7 @@ SELECT title, duration
  WHERE duration >= 3.5*60;
 
 -- 2.3 Названия сборников, вышедших в период с 2018 по 2020 год включительно.
-SELECT title
+SELECT title, pr_year
   FROM collections
  WHERE pr_year BETWEEN 2017 
    AND 2020;
@@ -23,8 +26,10 @@ SELECT name
 -- 2.5 Название треков, которые содержат слово «мой» или «my».
 SELECT title
   FROM track
- WHERE title LIKE '%Мой%' 
-    OR title LIKE '%My%';
+ WHERE STRING_TO_ARRAY(
+       LOWER(title), ' '
+       ) && ARRAY['my', 'мой']
+
     
 -- 3.1 Количество исполнителей в каждом жанре.
 SELECT g.title, COUNT(name)
@@ -34,12 +39,11 @@ SELECT g.title, COUNT(name)
  GROUP BY g.title
  
 -- 3.2 Количество треков, вошедших в альбомы 2019–2020 годов.
-SELECT a.title, COUNT(t.title)
+SELECT COUNT(t.title)
   FROM track t
   JOIN album a ON a.id = t.album_id
  WHERE a.pr_year BETWEEN 2018
    AND 2020
- GROUP BY a.title
  
  -- 3.3 Средняя продолжительность треков по каждому альбому.
  SELECT a.title, AVG(duration) AS average_duration
@@ -49,10 +53,16 @@ SELECT a.title, COUNT(t.title)
   
   -- 3.4 Все исполнители, которые не выпустили альбомы в 2020 году.
   SELECT name
-    FROM musician m 
-    JOIN album_musician am ON m.id = am.musician_id 
-    JOIN album a ON a.id = am.album_id 
-   WHERE a.pr_year != 2020
+    FROM musician m
+    WHERE name NOT IN
+          (SELECT name
+           FROM musician m
+           JOIN album_musician am ON m.id = am.musician_id 
+           JOIN album a ON a.id = am.album_id 
+           WHERE a.pr_year = 2020
+          );
+   
+    
    
  -- 3.5 Названия сборников, в которых присутствует конкретный исполнитель (выберите его сами).
    
